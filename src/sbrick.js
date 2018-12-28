@@ -17,8 +17,7 @@
 
 import { WebBluetooth } from './bluetooth'
 import Queue from 'promise-queue';
-export const SBrick = (function()  {
-	'use strict';
+
 
 	const ID_SBRICK                             = "SBrick";
 	const FIRMWARE_COMPATIBILITY                 = 4.17;
@@ -86,7 +85,7 @@ export const SBrick = (function()  {
 	const T_PVM = 500; // Time delay for PVM completion: the registry is update approximately 5 times per second (must be > 200ms)
 
 	// Sbrick class definition
-	class SBrick {
+	export class SBrick {
 
 		// CONSTRUCTOR
 
@@ -832,7 +831,3 @@ export const SBrick = (function()  {
 		};
 
 	}
-
-	return SBrick;
-
-})();
