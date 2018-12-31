@@ -147,6 +147,35 @@ class App extends Component {
     this.SBRICK2.drive( 0x00, this.SBRICK2.CW, 0 )
   }
 
+  fs = () => {
+    this.openFullscreen()
+  }
+
+openFullscreen() {
+  var elem = document.documentElement;
+  if (elem.requestFullscreen) {
+    elem.requestFullscreen();
+  } else if (elem.mozRequestFullScreen) { /* Firefox */
+    elem.mozRequestFullScreen();
+  } else if (elem.webkitRequestFullscreen) { /* Chrome, Safari and Opera */
+    elem.webkitRequestFullscreen();
+  } else if (elem.msRequestFullscreen) { /* IE/Edge */
+    elem.msRequestFullscreen();
+  }
+}
+
+closeFullscreen() {
+  if (document.exitFullscreen) {
+    document.exitFullscreen();
+  } else if (document.mozCancelFullScreen) { /* Firefox */
+    document.mozCancelFullScreen();
+  } else if (document.webkitExitFullscreen) { /* Chrome, Safari and Opera */
+    document.webkitExitFullscreen();
+  } else if (document.msExitFullscreen) { /* IE/Edge */
+    document.msExitFullscreen();
+  }
+}
+
   handleOnChange = (e) => {
     //console.log(e.target.value)
     this.setState({value1: e.target.value})
@@ -201,6 +230,8 @@ class App extends Component {
           <button onClick={() => this.start3(255)}>lights on</button>
           <button onClick={() => this.stop()}>lights off</button>
           <button onClick={() => this.getCharacteristic2()}>connect Sbrick</button>
+          <button onClick={() => this.fs()}>full screen</button>
+          <button onClick={() => this.closeFullscreen()}>close full screen</button>
         </div>
         <div style={{display: 'flex', justifyContent: "center", width: "100%"}}>
           <div style={{width: '30%'}}>
