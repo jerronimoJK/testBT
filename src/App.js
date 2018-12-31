@@ -10,7 +10,10 @@ class App extends Component {
 
   constructor(props) {
     super(props);
-    this.state = {value: 0};
+    this.state = {
+      value1: 0,
+      value2: 0
+    };
     this.SBRICK2 = new SBrick('SBrick');
   }
 
@@ -131,35 +134,48 @@ class App extends Component {
   }
 
   start1 = (val) => {
-    this.SBRICK2.drive( 0x03, this.SBRICK2.CW, val )
+    this.SBRICK2.drive( 0x00, this.SBRICK2.CW, val )
   }
   start2 = (val) => {
-    this.SBRICK2.drive( 0x03, this.SBRICK2.CW, val )
+    this.SBRICK2.drive( 0x00, this.SBRICK2.CW, val )
   }
   start3 = (val ) => {
-    this.SBRICK2.drive( 0x03, this.SBRICK2.CW, val )
+    this.SBRICK2.drive( 0x00, this.SBRICK2.CW, val )
   }
 
   stop = () => {
-    this.SBRICK2.drive( 0x03, this.SBRICK2.CW, 0 )
+    this.SBRICK2.drive( 0x00, this.SBRICK2.CW, 0 )
   }
 
   handleOnChange = (e) => {
     //console.log(e.target.value)
-    this.setState({value: e.target.value})
+    this.setState({value1: e.target.value})
+    console.log(e.target.value)
+    let direction = e.target.value < 0 ? this.SBRICK2.CCW : this.SBRICK2.CW
+    this.SBRICK2.drive( 0x01, direction, e.target.value )
+  }
+  handleOnChangeS1 = (e) => {
+    //console.log(e.target.value)
+    this.setState({value2: e.target.value})
     console.log(e.target.value)
     let direction = e.target.value < 0 ? this.SBRICK2.CW : this.SBRICK2.CCW
-    this.SBRICK2.drive( 0x01, direction, e.target.value )
+    this.SBRICK2.drive( 0x03, direction, e.target.value )
   }
   handleOnChange2 = (e) => {
     //console.log(e.target.value)
     this.SBRICK2.drive( 0x03, this.SBRICK2.CW, e.target.value )
   }
 
-  setSbrick = (val) => {
+  setSbrick1 = (val) => {
     //console.log(e.target.value)
     //this.setState({value: e.target.value})
     this.SBRICK2.drive( 0x01, this.SBRICK2.CW, val )
+  }
+
+  setSbrick2 = (val) => {
+    //console.log(e.target.value)
+    //this.setState({value: e.target.value})
+    this.SBRICK2.drive( 0x03, this.SBRICK2.CW, val )
   }
 
   render() {
@@ -168,6 +184,7 @@ class App extends Component {
   //  let SBRICK2 = new SBrick('SBrick'); // create a new SBrick object
 
   const inputStyle = {
+
     transformOorigin: "75px 75px",
     transform: "rotate(-90deg)",
     boxShadow: "inset 0px 1px 3px rgba(0, 0, 0, 0.3)",
@@ -179,36 +196,58 @@ class App extends Component {
       <div className="App">
         <div style={{margin: "0 0 100px 0 "}}>
           <p>BT TEST</p>
-          <button onClick={() => this.start1(20)}>start50</button>
-          <button onClick={() => this.start2(100)}>start100</button>
-          <button onClick={() => this.start3(255)}>start255</button>
-          <button onClick={() => this.stop()}>stop</button>
+          {/*<button onClick={() => this.start1(20)}>start50</button>*/}
+          {/*<button onClick={() => this.start2(100)}>start100</button>*/}
+          <button onClick={() => this.start3(255)}>lights on</button>
+          <button onClick={() => this.stop()}>lights off</button>
           <button onClick={() => this.getCharacteristic2()}>connect Sbrick</button>
         </div>
-        <div>
+        <div style={{display: 'flex', justifyContent: "center", width: "100%"}}>
+          <div style={{width: '30%'}}>
           <input style={inputStyle}
-            name='SBrick'
-            type='range'
-            min="-255"
-            max="255"
-            value={this.state.value}
-            onChange={this.handleOnChange}
+                 name='SBrick2'
+                 type='range'
+                 min="-255"
+                 max="255"
+                 value={this.state.value2}
+                 onChange={this.handleOnChangeS1}
             //onTouchStart={() => this.setState({value: 0})}
-            onTouchEnd={() => {
-              this.setSbrick(0);
-              this.setState({value: 0});
-            }}
-            onMouseUp={() => {
-              this.setSbrick(0);
-              this.setState({value: 0});
-            }}
+                 onTouchEnd={() => {
+                   this.setSbrick2(0);
+                   this.setState({value2: 0});
+                 }}
+                 onMouseUp={() => {
+                   this.setSbrick2(0);
+                   this.setState({value2: 0});
+                 }}
             //onMouseDown={() => this.setState({value: 0})}
           />
-          <input name="Sbrick2"
-            type="number"
-            onChange={this.handleOnChange2}
+          </div>
+          <div style={{width: '30%'}}>
+          <input style={inputStyle}
+                 name='SBrick'
+                 type='range'
+                 min="-255"
+                 max="255"
+                 value={this.state.value1}
+                 onChange={this.handleOnChange}
+            //onTouchStart={() => this.setState({value: 0})}
+                 onTouchEnd={() => {
+                   this.setSbrick1(0);
+                   this.setState({value1: 0});
+                 }}
+                 onMouseUp={() => {
+                   this.setSbrick1(0);
+                   this.setState({value1: 0});
+                 }}
+            //onMouseDown={() => this.setState({value: 0})}
           />
-          <p>{this.state.value}</p>
+          </div>
+          {/*<input name="Sbrick2"*/}
+            {/*type="number"*/}
+            {/*onChange={this.handleOnChange2}*/}
+          {/*/>*/}
+          {/*<p>{this.state.value}</p>*/}
         </div>
       </div>
     );

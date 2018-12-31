@@ -809,7 +809,7 @@ export const SBrick = (function()  {
 
 		/**
 		* Check if ports are busy
-		* @returns {boolean}
+		* @returns {boolean}git
 		*/
 		_portsIdle(ports) {
 			let allAreIdle = true;
