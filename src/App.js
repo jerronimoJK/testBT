@@ -81,7 +81,10 @@ class App extends Component {
 
   constructor(props) {
     super(props);
-    this.state = {value: 0};
+    this.state = {
+      value: 0,
+      value2: 0
+    };
     this.SBRICK2 = new SBrick('SBrick');
     this.BT = null;
     this.webBT = new WebBluetooth();
@@ -91,7 +94,70 @@ class App extends Component {
     this.maxConcurrent = 1;
     this.maxQueue      = Infinity;
     this.queue         = new Queue( this.maxConcurrent, this.maxQueue );
+    //
+    this.characteristic2 = null;
   }
+
+
+  _keepalive2() {
+    return setInterval( () => {
+    if( this.queue.getQueueLength() === 0 ) {
+        this.queue.add( () => {
+          return this.characteristic2.writeValue(
+            new Uint8Array( [ CMD_ADC, CMD_ADC_TEMP ] )
+          );
+        } );
+      }
+    }, T_KA);
+  }
+
+
+  connect2() {
+  console.log('Requesting Bluetooth Device...');
+  navigator.bluetooth.requestDevice(
+    {
+      //filters: [{ services: ['4dc591b0-857c-41de-b5f1-15abda665b0c'] }]
+      acceptAllDevices: true,
+      optionalServices: ['4dc591b0-857c-41de-b5f1-15abda665b0c']
+    })
+    .then(device => {
+      console.log('> Found ' + device.name);
+      console.log('Connecting to GATT Server...');
+      console.log('device', device)
+      //device.addEventListener('gattserverdisconnected', onDisconnected)
+      return device.gatt.connect();
+    })
+    .then(server => {
+      console.log('Getting Service - Sbrick Remote control...');
+      console.log('server', server)
+      return server.getPrimaryService('4dc591b0-857c-41de-b5f1-15abda665b0c');
+    })
+    .then(service => {
+      console.log('Getting Characteristic 0xffe9 - Light control...');
+      return service.getCharacteristic('02b8cbcc-0e25-4bda-8790-a15f53e6010f');
+    })
+    .then(characteristic => {
+      console.log('All ready!');
+      console.log(characteristic)
+      this.characteristic2 = characteristic;
+      //onConnected();
+    })
+    .then( () => {
+      this._keepalive2();
+    })
+    // .then(() => {
+    //   console.log('keep live')
+    //   this.keepalive = this._keepalive(this);
+    //   return setInterval( () => {
+    //     console.log('interval')
+    //       return this.characteristic2.writeValue(
+    //         new Uint8Array( [ CMD_ADC, CMD_ADC_TEMP ] )
+    //   );
+    //   }, T_KA)})
+    .catch(error => {
+      console.log('Argh! ' + error);
+    });
+}
 
   /* Utils */
 
@@ -119,22 +185,6 @@ class App extends Component {
     //   UUID_CHARACTERISTIC_REMOTECONTROL,
     //   new Uint8Array([ CMD_DRIVE, 0x03, 0x00, 255 ])
     // )
-  }
-
-  _keepalive() {
-    return setInterval( () => {
-      if( !this.isConnected() ) {
-        this._log('Connection lost');
-        clearInterval( this.keepalive );
-      } else if( this.queue.getQueueLength() === 0 ) {
-        this.queue.add( () => {
-          return this.webbluetooth.writeCharacteristicValue(
-            UUID_CHARACTERISTIC_REMOTECONTROL,
-            new Uint8Array( [ CMD_ADC, CMD_ADC_TEMP ] )
-          );
-        } );
-      }
-    }, T_KA);
   }
 
 
@@ -262,6 +312,25 @@ class App extends Component {
       }
 
 
+  startLights = () => {
+      this.queue.add( () => {
+        return this.characteristic2.writeValue(
+          new Uint8Array( [ CMD_DRIVE, 0x00, 0x01, 255 ] )
+        );
+      } );
+    // this.characteristic2.writeValue(
+    //   new Uint8Array( [ CMD_DRIVE, 0x00, 0x01, 255 ] ))
+  }
+
+  offLights = () => {
+      this.queue.add( () => {
+        return this.characteristic2.writeValue(
+          new Uint8Array( [ CMD_DRIVE, 0x00, 0x01, 0 ] )
+        );
+      } );
+    // this.characteristic2.writeValue(
+    //   new Uint8Array( [ CMD_DRIVE, 0x00, 0x01, 0 ] ))
+  }
 
   start1 = (val) => {
     this.char2.writeValue(new Uint8Array([ CMD_DRIVE, 0x03, 0x01, 55 ]))
@@ -287,6 +356,21 @@ class App extends Component {
     let direction = e.target.value < 0 ? this.SBRICK2.CW : this.SBRICK2.CCW
     this.SBRICK2.drive( 0x01, direction, e.target.value )
   }
+  handleOnChange3 = (e) => {
+    //console.log(e.target.value)
+    this.setState({value2: e.target.value})
+    console.log(e.target.value)
+    let direction = e.target.value < 0 ? 0x00 : 0x01
+    //this.SBRICK2.drive( 0x01, direction, e.target.value )
+    // this.characteristic2.writeValue(
+    //   new Uint8Array( [ CMD_DRIVE, 0x03, direction, Math.abs(e.target.value) ] ))
+    e.persist()
+    this.queue.add( () => {
+      return this.characteristic2.writeValue(
+        new Uint8Array( [ CMD_DRIVE, 0x03, direction, Math.abs(e.target.value) ] )
+      );
+    } );
+  }
   handleOnChange2 = (e) => {
     //console.log(e.target.value)
     this.SBRICK2.drive( 0x03, this.SBRICK2.CW, e.target.value )
@@ -296,6 +380,19 @@ class App extends Component {
     //console.log(e.target.value)
     //this.setState({value: e.target.value})
     this.SBRICK2.drive( 0x01, this.SBRICK2.CW, val )
+  }
+
+  setSbrick3 = (val) => {
+    //console.log(e.target.value)
+    //this.setState({value: e.target.value})
+    //this.SBRICK2.drive( 0x01, this.SBRICK2.CW, val )
+    this.queue.add( () => {
+      return this.characteristic2.writeValue(
+        new Uint8Array( [CMD_DRIVE, 0x03, 0x01, val ] )
+      );
+    } );
+    // this.characteristic2.writeValue(
+    //   new Uint8Array( [ CMD_DRIVE, 0x03, 0x01, val ] ))
   }
 
   render() {
@@ -320,7 +417,10 @@ class App extends Component {
           <button onClick={() => this.start3(255)}>start255</button>
           <button onClick={() => this.stop()}>stop</button>
           <button onClick={() => this.getCharacteristic2()}>connect Sbrick</button>
+          <button onClick={() => this.connect2()}>connect2</button>
           <button onClick={() => this.getCharacteristic3()}>test Sbrick</button>
+          <button onClick={() => this.startLights()}>on</button>
+          <button onClick={() => this.offLights()}>off</button>
         </div>
         <div>
           <input style={inputStyle}
@@ -339,6 +439,24 @@ class App extends Component {
               this.setSbrick(0);
               this.setState({value: 0});
             }}
+            //onMouseDown={() => this.setState({value: 0})}
+          />
+          <input style={inputStyle}
+                 name='SBrick3'
+                 type='range'
+                 min="-255"
+                 max="255"
+                 value={this.state.value2}
+                 onChange={this.handleOnChange3}
+            //onTouchStart={() => this.setState({value: 0})}
+                 onTouchEnd={() => {
+                   this.setSbrick3(0);
+                   this.setState({value2: 0});
+                 }}
+                 onMouseUp={() => {
+                   this.setSbrick3(0);
+                   this.setState({value2: 0});
+                 }}
             //onMouseDown={() => this.setState({value: 0})}
           />
           <input name="Sbrick2"
