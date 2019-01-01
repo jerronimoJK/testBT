@@ -105,7 +105,7 @@ class App extends Component {
         this.queue.add( () => {
           return this.characteristic2.writeValue(
             new Uint8Array( [ CMD_ADC, CMD_ADC_TEMP ] )
-          );
+          )
         } );
       }
     }, T_KA);
