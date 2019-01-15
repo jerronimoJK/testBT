@@ -224,16 +224,16 @@ closeFullscreen() {
     return (
       <div className="App">
         <div style={{margin: "0 0 100px 0 "}}>
-          <p>BT TEST</p>
+          <p>LEGO CONTROLLER</p>
           {/*<button onClick={() => this.start1(20)}>start50</button>*/}
           {/*<button onClick={() => this.start2(100)}>start100</button>*/}
+          <button onClick={() => this.getCharacteristic2()}>connect Sbrick</button>
           <button onClick={() => this.start3(255)}>lights on</button>
           <button onClick={() => this.stop()}>lights off</button>
-          <button onClick={() => this.getCharacteristic2()}>connect Sbrick</button>
           <button onClick={() => this.fs()}>full screen</button>
           <button onClick={() => this.closeFullscreen()}>close full screen</button>
         </div>
-        <div style={{display: 'flex', justifyContent: "center", width: "100%"}}>
+        <div style={{display: 'flex', justifyContent: "space-between", width: "100%"}}>
           <div style={{width: '30%'}}>
           <input style={inputStyle}
                  name='SBrick2'
